@@ -21,6 +21,13 @@ namespace Com.Fusa.FusaParty
         /// </summary>
         string gameVersion = "1";
 
+        [Tooltip("The UI Panel to let the user enter name, connect and play")]
+        [SerializeField]
+        private GameObject controlPanel;
+        [Tooltip("The UI Label to inform the user that the connection is in progress")]
+        [SerializeField]
+        private GameObject progressLabel;
+
         #endregion
 
         #region MonoBehaviour CallBacks
@@ -42,7 +49,8 @@ namespace Com.Fusa.FusaParty
         /// </summary>
         private void Start()
         {
-            Connect();
+            progressLabel.SetActive(false);
+            controlPanel.SetActive(true);
         }
 
         #endregion
@@ -56,8 +64,10 @@ namespace Com.Fusa.FusaParty
         /// </summary>
         public void Connect()
         {
+            progressLabel.SetActive(true);
+            controlPanel.SetActive(false);
             // We check if we are connected or not, we join if we are, else we initiate the connection to the server.
-            if(PhotonNetwork.IsConnected)
+            if (PhotonNetwork.IsConnected)
             {
                 // #Critical: We need at this point to attempt joining a Random Room. If it fails, we'll get notified in OnJoinRandomFailed() and we'll create one.
                 PhotonNetwork.JoinRandomRoom();
@@ -83,6 +93,8 @@ namespace Com.Fusa.FusaParty
 
         public override void OnDisconnected(DisconnectCause cause)
         {
+            progressLabel.SetActive(false);
+            controlPanel.SetActive(true);
             Debug.LogWarningFormat("PUN Basics Tutorial/Launcher: OnDisconnected() was called by PUN with reason {0}", cause);
         }
 
