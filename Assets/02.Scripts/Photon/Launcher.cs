@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using Photon.Realtime;
 
 namespace Com.Fusa.FusaParty
 {
-    public class Launcher : MonoBehaviour
+    public class Launcher : MonoBehaviourPunCallbacks
     {
         #region Private Serializable Fields
-
+        [Tooltip("The maximum number of players per room. When a room is full, it can't be joined by new players, and so new room will be created")]
+        [SerializeField]
+        private byte maxPlayersPerRoom = 4;
         #endregion
 
         #region Private Fields
@@ -66,6 +69,21 @@ namespace Com.Fusa.FusaParty
                 PhotonNetwork.ConnectUsingSettings();
 
             }
+        }
+
+        #endregion
+
+        #region MonoBehaviourPunCallbacks Callbacks
+
+        public override void OnConnectedToMaster()
+        {
+            Debug.Log("PUN Basics Tutorial/Launcher: OnConnectToMaster() was called by PUN");
+            PhotonNetwork.JoinRandomRoom();
+        }
+
+        public override void OnDisconnected(DisconnectCause cause)
+        {
+            Debug.LogWarningFormat("PUN Basics Tutorial/Launcher: OnDisconnected() was called by PUN with reason {0}", cause);
         }
 
         #endregion
