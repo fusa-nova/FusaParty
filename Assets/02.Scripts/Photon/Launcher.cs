@@ -20,6 +20,7 @@ namespace Com.Fusa.FusaParty
         /// This client's version number. Users are separated from each other by gameVersion (which allows you to make breaking changes).
         /// </summary>
         string gameVersion = "1";
+        bool isConnecting;
 
         [Tooltip("The UI Panel to let the user enter name, connect and play")]
         [SerializeField]
@@ -64,6 +65,7 @@ namespace Com.Fusa.FusaParty
         /// </summary>
         public void Connect()
         {
+            isConnecting = true;
             progressLabel.SetActive(true);
             controlPanel.SetActive(false);
             // We check if we are connected or not, we join if we are, else we initiate the connection to the server.
@@ -87,8 +89,12 @@ namespace Com.Fusa.FusaParty
 
         public override void OnConnectedToMaster()
         {
-            Debug.Log("PUN Basics Tutorial/Launcher: OnConnectToMaster() was called by PUN");
-            PhotonNetwork.JoinRandomRoom();
+            if (isConnecting)
+            {
+                Debug.Log("PUN Basics Tutorial/Launcher: OnConnectToMaster() was called by PUN");
+                // #Critical: The first we try to do is to join a potential existing room. If there is, good, else, we'll be called back with OnJoinRandomFailed()
+                PhotonNetwork.JoinRandomRoom();
+            }
         }
 
         public override void OnDisconnected(DisconnectCause cause)
@@ -97,6 +103,27 @@ namespace Com.Fusa.FusaParty
             controlPanel.SetActive(true);
             Debug.LogWarningFormat("PUN Basics Tutorial/Launcher: OnDisconnected() was called by PUN with reason {0}", cause);
         }
+
+        public override void OnJoinRandomFailed(short returnCode, string message)
+        {
+            // #Critical: We failed to join a random room, maybe none exists or they are all full. No worries, we create a new room.
+            PhotonNetwork.CreateRoom(null, new RoomOptions());
+        }
+
+        public override void OnJoinedRoom()
+        {
+            Debug.Log("PNU Basics Tutorial/Launcher : OnJoinedRoom() called by PUN. Now this client is in a room.");
+            // #Critical : We only load if we are the first player, else we rely on 'PhotonNetwork.AutomaticallySyncScene' to sync our instance scene.
+            if(PhotonNetwork.CurrentRoom.PlayerCount == 1)
+            {
+                Debug.Log("We load the 'Room for 1' ");
+
+                // #Critical
+                // Load the Room Level.
+                PhotonNetwork.LoadLevel("Room for 1");
+            }
+        }
+
 
         #endregion
 
