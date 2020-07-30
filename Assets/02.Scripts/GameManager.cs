@@ -12,7 +12,17 @@ namespace Com.Fusa.FusaParty
     public class GameManager : MonoBehaviourPunCallbacks
     {
 
+        #region Public Fields
+        public static GameManager Instance;
+
+        #endregion
+
         #region Photon Callbacks
+
+        void Start()
+        {
+            Instance = this;
+        }
 
         /// <summary>
         /// Called when the local player left the room. We need to load the launcher scene.
