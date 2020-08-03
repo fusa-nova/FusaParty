@@ -11,7 +11,7 @@ namespace Com.Fusa.FusaParty
     /// Player Manager.
     /// Handles fire Input and Beams
     /// </summary>
-    public class PlayerManager : MonoBehaviourPunCallbacks
+    public class PlayerManager : MonoBehaviourPunCallbacks, IPunObservable
     {
 
         #region Public Field
@@ -49,13 +49,34 @@ namespace Com.Fusa.FusaParty
                 beams.SetActive(false);
             }
         }
+        /// <summary>
+        /// MonoBehaviour method called on GameObject by Unity during initialization phase.
+        /// </summary>
+        void Start()
+        {
+            CameraWork _cameraWork = this.gameObject.GetComponent<CameraWork>();
+            if (_cameraWork != null)
+            {
+                if (photonView.IsMine)
+                {
+                    _cameraWork.OnStartFollwing();
+                }
+            }
+            else
+            {
+                Debug.LogError("<Color=Red><a>Missing</a></Color> CameraWork Component on playerPrefab.", this);
+            }
+        }
 
         /// <summary>
         /// MonoBehaviour method called on GameObject by Unity on every frame.
         /// </summary>
         void Update()
         {
-            ProcessInputs();
+            if (photonView.IsMine)
+            {
+                ProcessInputs();
+            }
             if (Health <= 0f)
             {
                 GameManager.Instance.LeaveRoom();
@@ -135,6 +156,26 @@ namespace Com.Fusa.FusaParty
                 }
             }
         }
+        #endregion
+
+        #region IPunObservable implementation
+
+        public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+        {
+            if (stream.IsWriting)
+            {
+                // We own this player: send the others our data
+                stream.SendNext(isFiring);
+                stream.SendNext(Health);
+            }
+            else
+            {
+                // Network player, receive data
+                this.isFiring = (bool)stream.ReceiveNext();
+                this.Health = (float)stream.ReceiveNext();
+            }
+        }
+
         #endregion
     }
 }
