@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -21,6 +22,9 @@ namespace Com.Fusa.FusaParty
 
         public static GameManager Instance;
 
+        [Tooltip("The local player instance. Use this to know if the local player is represented in the Scene")]
+        public static GameObject LocalPlayerInstacne;
+
         #endregion
 
         #region Private Fields
@@ -40,6 +44,17 @@ namespace Com.Fusa.FusaParty
         /// </summary>
         void Awake()
         {
+
+            // #Important
+            // Used in GameManager.cs : We keep track of the localPlayer instance to prevent instantiation when levels are synchronized
+            if (photonView.IsMine)
+            {
+                PlayerManager.LocalPlayerInstacne = this.gameObject;
+            }
+            // #Critical
+            // We flag as don't destroy on load so that instance survives level synchronization, thus giving a seamless experience when levels load.
+            DontDestroyOnLoad(this.gameObject);
+
             if (beams == null)
             {
                 Debug.LogError("<Color=Red><a>Missing</a></Color> Beams Reference.", this);
@@ -66,6 +81,15 @@ namespace Com.Fusa.FusaParty
             {
                 Debug.LogError("<Color=Red><a>Missing</a></Color> CameraWork Component on playerPrefab.", this);
             }
+
+            #if UNITY_5_4_OR_NEWER
+            // Unity 5.4 has a new scene management. Register a method to call CalledOnLevelWasLoaded.
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += (scene, loadingMode) =>
+            {
+                this.CalledOnLevelWasLoaded(scene.buildIndex);
+            };
+
+            #endif
         }
 
         /// <summary>
@@ -130,6 +154,24 @@ namespace Com.Fusa.FusaParty
             }
             // We slowly affect health when beam is constantly hitting us, so player has to move to prevent death.
             Health -= 0.1f * Time.deltaTime;
+        }
+
+        #if !UNITY_5_4_OR_NEWER
+        /// <summary>
+        /// See CalledOnLevelWasLoaded. Outdated in Unity 5.4
+        /// </summary>
+        void OnLevelWasLoaded(int level)
+        {
+            this.CalledOnLevelWasLoaded(level);
+        }
+        #endif
+
+        void CalledOnLevelWasLoaded(int level)
+        {
+            if (!Physics.Raycast(transform.position, -Vector3.up, 5f))
+            {
+                transform.position = new Vector3(0f, 5f, 0f);
+            }
         }
 
         #endregion
