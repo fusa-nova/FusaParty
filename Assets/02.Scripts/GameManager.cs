@@ -27,7 +27,7 @@ namespace Com.Fusa.FusaParty
             Instance = this;
             if (playerPrefab == null)
             {
-                Debug.LogError("<Color=Red><a>Missing</a></Color> playerPrefab Refrence. Please set it up in GameObject 'GameManager'", this);
+                Debug.LogError("<Color=Red><a>Missing</a></Color> playerPrefab Reference. Please set it up in GameObject 'GameManager'", this);
             }
             else
             {
