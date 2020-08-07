@@ -364,6 +364,7 @@ MonoBehaviour:
   playerAnswerCube: 0
   playerAnswerQuad: 0
   cubeController: {fileID: 0}
+  startGame: 0
   maxCube: 8
   maxQuad: 3
 --- !u!4 &446562284

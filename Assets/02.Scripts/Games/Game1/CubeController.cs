@@ -14,61 +14,65 @@ public class CubeController : MonoBehaviour
     #region Private Fields
     [SerializeField]
     GameObject quizCube;
-    public int materialNumber;
+    Game1Manager game1Manager;
 
     #endregion
 
     #region MonoBehaviour Callbacks
+    [System.Obsolete]
     void Start()
     {
         if (quizCube == null)
         {
             quizCube = this.gameObject;
-            //Debug.LogError("<Color=Red><a>Missing</a></Color> quizSphere Reference. Please set it up in GameObject 'SphereController'", this);
         }
         rotateSpeed = 50f;
+        game1Manager = GameObject.Find("Game1Manager").GetComponent<Game1Manager>();
     }
 
+    [System.Obsolete]
     void Update()
     {
-
-        if (rotateSpeed > 0)
+        if (game1Manager.startGame == true)
         {
-            if (rotateSpeed >= 20f)
+            if (rotateSpeed > 0)
             {
-                rotateSpeed -= 0.05f;
-            }
-            else if (rotateSpeed >= 15f)
-            {
-                rotateSpeed -= 0.02f;
-            }
-            else if (rotateSpeed >= 10f)
-            {
-                rotateSpeed -= 0.005f;
-            }
-            else if (rotateSpeed >= 7f)
-            {
-                rotateSpeed -= 0.003f;
-            }
-            else if (rotateSpeed >= 3f)
-            {
-                rotateSpeed -= 0.002f;
+                if (rotateSpeed >= 20f)
+                {
+                    rotateSpeed -= 0.05f;
+                }
+                else if (rotateSpeed >= 15f)
+                {
+                    rotateSpeed -= 0.02f;
+                }
+                else if (rotateSpeed >= 10f)
+                {
+                    rotateSpeed -= 0.005f;
+                }
+                else if (rotateSpeed >= 7f)
+                {
+                    rotateSpeed -= 0.003f;
+                }
+                else if (rotateSpeed >= 3f)
+                {
+                    rotateSpeed -= 0.002f;
+                }
+                else
+                {
+                    rotateSpeed -= 0.001f;
+                }
+                Random.InitState(int.Parse(this.gameObject.name.Substring(4, 1)) * 10 + 1 + (int)Time.time);
+                quizCube.transform.Rotate(Vector3.up * rotateSpeed * Random.value);
+                Random.InitState(int.Parse(this.gameObject.name.Substring(4, 1)) * 10 + 2 + (int)Time.time);
+                quizCube.transform.Rotate(Vector3.left * rotateSpeed * Random.value);
+                Random.InitState(int.Parse(this.gameObject.name.Substring(4, 1)) * 10 + 3 + (int)Time.time);
+                quizCube.transform.Rotate(Vector3.forward * rotateSpeed * Random.value);
             }
             else
             {
-                rotateSpeed -= 0.001f;
+                rotateSpeed = 0f;
+                quizCube.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
             }
-            Random.InitState(int.Parse(this.gameObject.name.Substring(4, 1)) * 10 + 1 + (int)Time.time);
-            quizCube.transform.Rotate(Vector3.up * rotateSpeed * Random.value);
-            Random.InitState(int.Parse(this.gameObject.name.Substring(4, 1)) * 10 + 2 + (int)Time.time);
-            quizCube.transform.Rotate(Vector3.left * rotateSpeed * Random.value);
-            Random.InitState(int.Parse(this.gameObject.name.Substring(4, 1)) * 10 + 3 + (int)Time.time);
-            quizCube.transform.Rotate(Vector3.forward * rotateSpeed * Random.value);
-        }
-        else
-        {
-            rotateSpeed = 0f;
-            quizCube.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
         }
     }
 

@@ -61,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dfa3b0eb8c4f7534a9c58af2ada2a8f6, type: 2}
+  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -109,7 +109,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rotateSpeed: 0
   quizCube: {fileID: 9067160142537841284}
-  materialNumber: 0
 --- !u!114 &1144697373
 MonoBehaviour:
   m_ObjectHideFlags: 0
