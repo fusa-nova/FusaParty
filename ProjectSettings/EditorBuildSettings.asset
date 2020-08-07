@@ -9,15 +9,6 @@ EditorBuildSettings:
     path: Assets/01.Scenes/Launcher.unity
     guid: fc5ecad572c8c9b4ba6188bb218c0f2f
   - enabled: 1
-    path: Assets/01.Scenes/Room For 1.unity
-    guid: c56a1d2e367b95a42898735e203c69b1
-  - enabled: 1
-    path: Assets/01.Scenes/Room For 2.unity
-    guid: 97f2b9c164cc371499decbe2de378eed
-  - enabled: 1
-    path: Assets/01.Scenes/Room For 3.unity
-    guid: 4da2a341aca5ef84fa3162f51b896932
-  - enabled: 1
-    path: Assets/01.Scenes/Room For 4.unity
-    guid: 9c98f8b8f620ff0479cc44b4dea2108d
+    path: Assets/01.Scenes/Games/Game 1.unity
+    guid: 16f0ff741f517b14d9d36326382c15e2
   m_configObjects: {}

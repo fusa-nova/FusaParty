@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Photon.Pun;
-using Packages.Rider.Editor.Util;
 
 public class CubeController : MonoBehaviour
 {
