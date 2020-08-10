@@ -13,8 +13,8 @@ public class Game1Manager : MonoBehaviourPunCallbacks
     public GameObject quad;
     public int answerCube;
     public int answerQuad;
-    public int playerAnswerCube;
-    public int playerAnswerQuad;
+    public GameObject playerAnswerCube;
+    public GameObject playerAnswerQuad;
     public CubeController cubeController;
     public bool startGame;
 
@@ -27,12 +27,18 @@ public class Game1Manager : MonoBehaviourPunCallbacks
     private int maxCube = 8;
     [SerializeField]
     private int maxQuad = 3;
+    public int quadStart = -3;
     private int answerMaterialId;
     private int[] ranArr = Enumerable.Range(0, rangeLength).ToArray();
 
-    private Game1Manager game1Manager;
     private string objectName;
     private int objectNumber;
+
+    public int[] rotateCubeX = new int[4];
+    public int[] rotateCubeY = new int[2];
+    public int[,] rotateMatrix = new int[4,2];
+    public int[] quadMatrix = new int[3];
+
 
     #endregion
 
@@ -44,7 +50,23 @@ public class Game1Manager : MonoBehaviourPunCallbacks
         startGame = false;
         LoadGames();
         Debug.Log("Game1Manager");
-
+        rotateCubeX[0] = -3;
+        rotateCubeX[1] = -1;
+        rotateCubeX[2] = 1;
+        rotateCubeX[3] = 3;
+        rotateCubeY[0] = 0;
+        rotateCubeY[1] = -2;
+        for(int i = 0; i < rotateCubeY.Length; i++)
+        {
+            for (int j = 0; j < rotateCubeX.Length; j++)
+            {
+                rotateMatrix[j,i] = 0;
+            }
+        }
+        for(int i = 0; i < maxQuad; ++i)
+        {
+            quadMatrix[i] = 0;
+        }
     }
 
     void Update()
@@ -59,39 +81,59 @@ public class Game1Manager : MonoBehaviourPunCallbacks
                 if (Physics.Raycast(ray, out hit, Mathf.Infinity))
                 {
                     objectName = hit.collider.gameObject.name.Substring(0, 4);
-                    objectNumber = int.Parse(hit.collider.gameObject.name.Substring(4, 1));
+                    //objectNumber = hit.collider.gameObject.GetComponent<CubeController>();
+                    objectNumber = 10;
                     switch (objectName)
                     {
                         case "Cube":
-                            if (game1Manager.playerAnswerCube == 0)
+                            if (playerAnswerCube == null)
                             {
-                                game1Manager.playerAnswerCube = objectNumber;
-                                hit.collider.gameObject.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineVisible;
+                                playerAnswerCube = hit.collider.gameObject;
+                                playerAnswerCube.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineVisible;
                             }
                             else
                             {
-                                game1Manager.playerAnswerCube = 0;
-                                hit.collider.gameObject.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineHidden;
+                                if (playerAnswerCube == hit.collider.gameObject)
+                                {
+                                    playerAnswerCube.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineHidden;
+                                    playerAnswerCube = null;
+                                }
+                                else
+                                {
+                                    playerAnswerCube.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineHidden;
+                                    playerAnswerCube = hit.collider.gameObject;
+                                    playerAnswerCube.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineVisible;
+                                }
                             }
                             break;
                         case "Quad":
-                            if (game1Manager.playerAnswerQuad == 0)
+                            if (playerAnswerQuad == null)
                             {
-                                game1Manager.playerAnswerQuad = objectNumber;
+                                playerAnswerQuad = hit.collider.gameObject;
                                 hit.collider.gameObject.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineVisible;
                             }
                             else
                             {
-                                game1Manager.playerAnswerQuad = 0;
-                                hit.collider.gameObject.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineHidden;
+                                if (playerAnswerQuad == hit.collider.gameObject)
+                                {
+                                    playerAnswerQuad.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineHidden;
+                                    playerAnswerQuad = null;
+                                }
+                                else
+                                {
+                                    playerAnswerQuad.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineHidden;
+                                    playerAnswerQuad = hit.collider.gameObject;
+                                    playerAnswerQuad.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineVisible;
+                                }
                             }
                             break;
                         default:
                             break;
                     }
-                    if (game1Manager.playerAnswerCube != 0 && game1Manager.playerAnswerQuad != 0)
+                    if (playerAnswerCube != null && playerAnswerQuad != null)
                     {
-                        if (game1Manager.answerCube == game1Manager.playerAnswerCube && game1Manager.answerQuad == game1Manager.playerAnswerQuad)
+
+                        if (playerAnswerCube.GetComponent<CubeController>().answer && playerAnswerQuad.GetComponent<QuadController>().answer)
                         {
                             Debug.Log("정답입니다");
                         }
@@ -121,55 +163,105 @@ public class Game1Manager : MonoBehaviourPunCallbacks
 
     #region Game Logic
     [System.Obsolete]
-    public void setttingGames()
+    public void SetttingGames()
     {
-        playerAnswerCube = 0;
-        playerAnswerQuad = 0;
-        Random.seed = System.DateTime.Now.Millisecond;
-        answerCube = Random.Range(1, 9);
-        answerQuad = Random.Range(1, 4);
-        game1Manager = GameObject.Find("Game1Manager").GetComponent<Game1Manager>();
-
-        for (int i = 0; i < rangeLength; ++i)
+        if (PhotonNetwork.IsMasterClient)
         {
-            int ranIdx = Random.Range(i, rangeLength);
+            Random.seed = System.DateTime.Now.Millisecond;
+            answerCube = Random.Range(1, 9);
+            answerQuad = Random.Range(1, 4);
 
-            int temp = ranArr[ranIdx];
-            ranArr[ranIdx] = ranArr[i];
-            ranArr[i] = temp;
-        }
+            for (int i = 0; i < rangeLength; ++i)
+            {
+                int ranIdx = Random.Range(i, rangeLength);
 
-        for (int i = 0; i < maxCube; ++i)
-        {
-            setCube(i + 1, ranArr[i] + 1);
-        }
-        Debug.Log(answerCube);
-        Debug.Log(answerQuad);
-        for (int i = 0; i < maxQuad; ++i)
-        {
-            setQuad(i + 1, ranArr[maxCube + i] + 1);
+                int temp = ranArr[ranIdx];
+                ranArr[ranIdx] = ranArr[i];
+                ranArr[i] = temp;
+            }
+
+            for (int i = 0; i < maxCube; ++i)
+            {
+                SetCube(i + 1, ranArr[i] + 1);
+            }
+            Debug.Log(answerCube + "정답 큐브");
+            Debug.Log(answerQuad + "정답 쿼드");
+            for (int i = 0; i < maxQuad; ++i)
+            {
+                SetQuad(i + 1, ranArr[maxCube + i] + 1);
+            }
         }
     }
 
-    public void setCube(int number, int materialId)
+    public void SetCube(int number, int materialId)
     {
-        cube = GameObject.Find("Cube" + number.ToString());
-        cube.GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
-        if (number == answerCube)
+        cube = MakeCube();
+        if (cube != null)
         {
-            answerMaterialId = materialId;
+            //photonView.RPC("ChangeCubeMaterial", RpcTarget.All, materialId);
+            cube.GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
+            if (number == answerCube)
+            {
+                cube.GetComponent<CubeController>().answer = true;
+            }
         }
+        cube = null;
     }
 
-    public void setQuad(int number, int materialId)
+    public GameObject MakeCube()
     {
-        if (number == answerQuad)
+        for (int i = 0; i < rotateCubeY.Length; i++)
         {
-            materialId = answerMaterialId;
+            for (int j = 0; j < rotateCubeX.Length; j++)
+            {
+                if (rotateMatrix[j, i] == 0)
+                {
+                    rotateMatrix[j, i] = 1;
+                    cube = PhotonNetwork.Instantiate("Game1/Cube", new Vector3(rotateCubeX[j], rotateCubeY[i], 2f), Quaternion.identity, 0);
+                    return cube;
+                }
+
+            }
         }
-        quad = GameObject.Find("Quad" + number.ToString());
+        return null;
+    }
+
+    public void ChangeCubeMaterial(int materialId)
+    {
         quad.GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
     }
+
+    public void SetQuad(int number, int materialId)
+    {
+        quad = MakeQuad();
+        if (quad != null)
+        {
+            quad.GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
+
+            if (number == answerQuad)
+            {
+                quad.GetComponent<QuadController>().answer = true;
+            }
+        }
+        quad = null;
+    }
+
+    public GameObject MakeQuad()
+    {
+        for (int i = 0; i < maxQuad; ++i)
+        {
+            if (quadMatrix[i] == 0)
+            {
+                quadMatrix[i] = 1;
+                quad = PhotonNetwork.Instantiate("Game1/Quad", new Vector3(quadStart, 3f, 2f), Quaternion.identity, 0);
+                quadStart += 3;
+                return quad;
+            }
+        }
+        return null;
+    }
+
+
 
     #endregion
 
@@ -207,7 +299,7 @@ public class Game1Manager : MonoBehaviourPunCallbacks
         yield return new WaitForSeconds(1.0f);
         Debug.Log("start");
         startGame = true;
-        setttingGames();
+        SetttingGames();
     }
 
     #endregion

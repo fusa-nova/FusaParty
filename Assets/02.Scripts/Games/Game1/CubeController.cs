@@ -4,18 +4,19 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using Photon.Pun;
 
-public class CubeController : MonoBehaviour
+public class CubeController : MonoBehaviour, IPunObservable
 {
     #region Public Fields
     [Tooltip("스피어 회전 속도 조정을 위한 필드 값")]
     public float rotateSpeed;
+    public bool answer;
     #endregion
 
     #region Private Fields
     [SerializeField]
     GameObject quizCube;
     Game1Manager game1Manager;
-
+    private MeshRenderer meshRenderer;
     #endregion
 
     #region MonoBehaviour Callbacks
@@ -61,11 +62,15 @@ public class CubeController : MonoBehaviour
                 {
                     rotateSpeed -= 0.001f;
                 }
-                Random.InitState(int.Parse(this.gameObject.name.Substring(4, 1)) * 10 + 1 + (int)Time.time);
+                //Debug.Log(+"인스턴스아이디");
+                Random.InitState(10 + 1 + (int)Time.time);
+                Random.InitState(this.gameObject.GetInstanceID() + 1 + (int)Time.time);
                 quizCube.transform.Rotate(Vector3.up * rotateSpeed * Random.value);
-                Random.InitState(int.Parse(this.gameObject.name.Substring(4, 1)) * 10 + 2 + (int)Time.time);
+                Random.InitState(10 + 1 + (int)Time.time);
+                Random.InitState(this.gameObject.GetInstanceID() + 2 + (int)Time.time);
                 quizCube.transform.Rotate(Vector3.left * rotateSpeed * Random.value);
-                Random.InitState(int.Parse(this.gameObject.name.Substring(4, 1)) * 10 + 3 + (int)Time.time);
+                Random.InitState(10 + 1 + (int)Time.time);
+                Random.InitState(this.gameObject.GetInstanceID() + 3 + (int)Time.time);
                 quizCube.transform.Rotate(Vector3.forward * rotateSpeed * Random.value);
             }
             else
@@ -97,4 +102,23 @@ public class CubeController : MonoBehaviour
 
     #endregion
 
+    #region IPunObservable implementation
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if(stream.IsWriting)
+        {
+            stream.SendNext(meshRenderer.materials[0]);
+        }
+        else
+        {
+            Debug.LogError("씨발" + (Material)stream.ReceiveNext());
+            Debug.LogErrorFormat("씨발썅봉" + (Material)stream.ReceiveNext());
+            this.meshRenderer.materials[0] = (Material)stream.ReceiveNext() as Material;
+        }
+    }
+
+    #endregion
+
 }
+

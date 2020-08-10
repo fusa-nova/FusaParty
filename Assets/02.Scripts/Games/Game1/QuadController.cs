@@ -1,12 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Photon.Pun;
 using UnityEngine;
-using Photon.Pun;
 
-public class QuadController : MonoBehaviour
+public class QuadController : MonoBehaviour, IPunObservable
 {
     #region Public Fields
-
+    public bool answer;
     #endregion
 
     #region Private Fields
@@ -20,7 +18,7 @@ public class QuadController : MonoBehaviour
     [System.Obsolete]
     void Start()
     {
-        if(quizQuad == null)
+        if (quizQuad == null)
         {
             quizQuad = gameObject;
         }
@@ -38,4 +36,21 @@ public class QuadController : MonoBehaviour
 
     #endregion
 
+    #region IPunObservable implementation
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        //if (stream.IsWriting)
+        //{
+        //    // We own this player: send the others our data
+        //    stream.SendNext(this.GetComponent<MeshRenderer>().material);
+        //}
+        //else
+        //{
+        //    // Network player, receive data
+        //    this.GetComponent<MeshRenderer>().material = (Material)stream.ReceiveNext();
+        //}
+    }
+
+    #endregion
 }
