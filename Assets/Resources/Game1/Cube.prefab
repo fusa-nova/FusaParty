@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 9067160142537841282}
   - component: {fileID: 4578899391088663394}
   - component: {fileID: 1144697373}
+  - component: {fileID: 4345561844626609796}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -108,6 +109,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rotateSpeed: 0
+  answer: 0
   quizCube: {fileID: 9067160142537841284}
 --- !u!114 &1144697373
 MonoBehaviour:
@@ -127,3 +129,25 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &4345561844626609796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9067160142537841284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  ObservedComponents:
+  - {fileID: 4578899391088663394}
+  viewIdField: 0
+  InstantiationId: 0
+  isRuntimeInstantiated: 0

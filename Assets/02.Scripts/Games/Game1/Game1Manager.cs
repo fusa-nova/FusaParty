@@ -1,7 +1,10 @@
 ﻿using System.Linq;
 using UnityEngine;
+using Photon.Pun;
+using Photon.Realtime;
+using System.Collections;
 
-public class Game1Manager : MonoBehaviour
+public class Game1Manager : MonoBehaviourPunCallbacks
 {
 
     #region Public Fields
@@ -10,9 +13,10 @@ public class Game1Manager : MonoBehaviour
     public GameObject quad;
     public int answerCube;
     public int answerQuad;
-    public int playerAnswerCube;
-    public int playerAnswerQuad;
+    public GameObject playerAnswerCube;
+    public GameObject playerAnswerQuad;
     public CubeController cubeController;
+    public bool startGame;
 
     #endregion
 
@@ -23,92 +27,280 @@ public class Game1Manager : MonoBehaviour
     private int maxCube = 8;
     [SerializeField]
     private int maxQuad = 3;
+    public int quadStart = -3;
     private int answerMaterialId;
     private int[] ranArr = Enumerable.Range(0, rangeLength).ToArray();
 
+    private string objectName;
+    private int objectNumber;
+
+    public int[] rotateCubeX = new int[4];
+    public int[] rotateCubeY = new int[2];
+    public int[,] rotateMatrix = new int[4,2];
+    public int[] quadMatrix = new int[3];
+
+
     #endregion
 
-    [System.Obsolete]
+    #region Photon Callbacks
+
+
     void Start()
     {
-        playerAnswerCube = 0;
-        playerAnswerQuad = 0;
-        Random.seed = System.DateTime.Now.Millisecond;
-        answerCube = Random.Range(1, 9);
-        answerQuad = Random.Range(1, 4);
-
-        for (int i = 0; i < rangeLength; ++i)
+        startGame = false;
+        LoadGames();
+        Debug.Log("Game1Manager");
+        rotateCubeX[0] = -3;
+        rotateCubeX[1] = -1;
+        rotateCubeX[2] = 1;
+        rotateCubeX[3] = 3;
+        rotateCubeY[0] = 0;
+        rotateCubeY[1] = -2;
+        for(int i = 0; i < rotateCubeY.Length; i++)
         {
-            int ranIdx = Random.Range(i, rangeLength);
-
-            int temp = ranArr[ranIdx];
-            ranArr[ranIdx] = ranArr[i];
-            ranArr[i] = temp;
+            for (int j = 0; j < rotateCubeX.Length; j++)
+            {
+                rotateMatrix[j,i] = 0;
+            }
         }
-
-        for (int i = 0; i < maxCube; ++i)
+        for(int i = 0; i < maxQuad; ++i)
         {
-            setCube(i + 1, ranArr[i] + 1);
-        }
-
-        Debug.Log(answerCube);
-        Debug.Log(answerQuad);
-
-        for (int i = 0; i < maxQuad; ++i)
-        {
-            setQuad(i + 1, ranArr[maxCube + i] + 1);
+            quadMatrix[i] = 0;
         }
     }
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (startGame == true)
         {
-            //Debug.Log("으악" + Input.mousePosition);
-            //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            //Camera.main.
-            //RaycastHit hit;
-            //if (Physics.Raycast(ray, out hit))
-            //{
-            //    Debug.Log("???");
-            //    if (Input.GetMouseButton(0))
-            //    {
-            //        Debug.Log("?12312?");
-            //    }
-            //}
-            //RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), transform.position, 1000f);
-            //Debug.Log(hit.transform);
-            //if (hit)
-            //{
-            //    Debug.Log("맞음");
-            //}
+            if (Input.GetMouseButtonDown(0))
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit hit;
+
+                if (Physics.Raycast(ray, out hit, Mathf.Infinity))
+                {
+                    objectName = hit.collider.gameObject.name.Substring(0, 4);
+                    //objectNumber = hit.collider.gameObject.GetComponent<CubeController>();
+                    objectNumber = 10;
+                    switch (objectName)
+                    {
+                        case "Cube":
+                            if (playerAnswerCube == null)
+                            {
+                                playerAnswerCube = hit.collider.gameObject;
+                                playerAnswerCube.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineVisible;
+                            }
+                            else
+                            {
+                                if (playerAnswerCube == hit.collider.gameObject)
+                                {
+                                    playerAnswerCube.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineHidden;
+                                    playerAnswerCube = null;
+                                }
+                                else
+                                {
+                                    playerAnswerCube.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineHidden;
+                                    playerAnswerCube = hit.collider.gameObject;
+                                    playerAnswerCube.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineVisible;
+                                }
+                            }
+                            break;
+                        case "Quad":
+                            if (playerAnswerQuad == null)
+                            {
+                                playerAnswerQuad = hit.collider.gameObject;
+                                hit.collider.gameObject.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineVisible;
+                            }
+                            else
+                            {
+                                if (playerAnswerQuad == hit.collider.gameObject)
+                                {
+                                    playerAnswerQuad.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineHidden;
+                                    playerAnswerQuad = null;
+                                }
+                                else
+                                {
+                                    playerAnswerQuad.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineHidden;
+                                    playerAnswerQuad = hit.collider.gameObject;
+                                    playerAnswerQuad.GetComponent<Outline>().OutlineMode = Outline.Mode.OutlineVisible;
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    if (playerAnswerCube != null && playerAnswerQuad != null)
+                    {
+
+                        if (playerAnswerCube.GetComponent<CubeController>().answer && playerAnswerQuad.GetComponent<QuadController>().answer)
+                        {
+                            Debug.Log("정답입니다");
+                        }
+                        else
+                        {
+                            Debug.Log("오답입니다");
+                        }
+                    }
+                }
+            }
         }
     }
 
-
-
-    public void setCube(int number, int materialId)
+    public override void OnPlayerEnteredRoom(Player other)
     {
-        cube = GameObject.Find("Cube" + number.ToString());
-        cubeController = cube.GetComponent<CubeController>();
-        cube.GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
-        //cubeController.materialNumber = materialId;
-        if (number == answerCube)
+        Debug.LogFormat("OnPlayerEnteredRoom() {0}", other.NickName);
+
+        if (PhotonNetwork.IsMasterClient)
         {
-            answerMaterialId = materialId;
-            //quad = GameObject.Find("Quad" + answerQuad.ToString());
-            //quad.GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
+            Debug.LogFormat("OnPlayerEnteredRoom IsMasterClient {0}", PhotonNetwork.IsMasterClient);
+
+            LoadGames();
         }
     }
 
-    public void setQuad(int number, int materialId)
+    #endregion
+
+    #region Game Logic
+    [System.Obsolete]
+    public void SetttingGames()
     {
-        if (number == answerQuad)
+        if (PhotonNetwork.IsMasterClient)
         {
-            materialId = answerMaterialId;
+            Random.seed = System.DateTime.Now.Millisecond;
+            answerCube = Random.Range(1, 9);
+            answerQuad = Random.Range(1, 4);
+
+            for (int i = 0; i < rangeLength; ++i)
+            {
+                int ranIdx = Random.Range(i, rangeLength);
+
+                int temp = ranArr[ranIdx];
+                ranArr[ranIdx] = ranArr[i];
+                ranArr[i] = temp;
+            }
+
+            for (int i = 0; i < maxCube; ++i)
+            {
+                SetCube(i + 1, ranArr[i] + 1);
+            }
+            Debug.Log(answerCube + "정답 큐브");
+            Debug.Log(answerQuad + "정답 쿼드");
+            for (int i = 0; i < maxQuad; ++i)
+            {
+                SetQuad(i + 1, ranArr[maxCube + i] + 1);
+            }
         }
-        quad = GameObject.Find("Quad" + number.ToString());
+    }
+
+    public void SetCube(int number, int materialId)
+    {
+        cube = MakeCube();
+        if (cube != null)
+        {
+            //photonView.RPC("ChangeCubeMaterial", RpcTarget.All, materialId);
+            cube.GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
+            if (number == answerCube)
+            {
+                cube.GetComponent<CubeController>().answer = true;
+            }
+        }
+        cube = null;
+    }
+
+    public GameObject MakeCube()
+    {
+        for (int i = 0; i < rotateCubeY.Length; i++)
+        {
+            for (int j = 0; j < rotateCubeX.Length; j++)
+            {
+                if (rotateMatrix[j, i] == 0)
+                {
+                    rotateMatrix[j, i] = 1;
+                    cube = PhotonNetwork.Instantiate("Game1/Cube", new Vector3(rotateCubeX[j], rotateCubeY[i], 2f), Quaternion.identity, 0);
+                    return cube;
+                }
+
+            }
+        }
+        return null;
+    }
+
+    public void ChangeCubeMaterial(int materialId)
+    {
         quad.GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
     }
 
+    public void SetQuad(int number, int materialId)
+    {
+        quad = MakeQuad();
+        if (quad != null)
+        {
+            quad.GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
+
+            if (number == answerQuad)
+            {
+                quad.GetComponent<QuadController>().answer = true;
+            }
+        }
+        quad = null;
+    }
+
+    public GameObject MakeQuad()
+    {
+        for (int i = 0; i < maxQuad; ++i)
+        {
+            if (quadMatrix[i] == 0)
+            {
+                quadMatrix[i] = 1;
+                quad = PhotonNetwork.Instantiate("Game1/Quad", new Vector3(quadStart, 3f, 2f), Quaternion.identity, 0);
+                quadStart += 3;
+                return quad;
+            }
+        }
+        return null;
+    }
+
+
+
+    #endregion
+
+    #region Private Methods
+
+    void LoadGames()
+    {
+        if (!PhotonNetwork.IsMasterClient)
+        {
+            //Debug.LogError("PhotonNetwork : Trying to Load a level but we are not the master Client");
+        }
+        Debug.LogFormat("PlayerCount" + PhotonNetwork.CurrentRoom.PlayerCount);
+        //PhotonNetwork.LoadLevel("Room for " + PhotonNetwork.CurrentRoom.PlayerCount);
+        if(PhotonNetwork.CurrentRoom.PlayerCount >= 2)
+        {
+            Debug.Log("Game Start");
+            // 나중에 플레이어가 시작을 눌렀을 때로 변경해야한다.
+            StartGames();
+        }
+    }
+
+    void StartGames()
+    {
+        StartCoroutine("StartGameCoroutine");
+    }
+
+    [System.Obsolete]
+    IEnumerator StartGameCoroutine()
+    {
+        Debug.Log("3");
+        yield return new WaitForSeconds(1.0f);
+        Debug.Log("2");
+        yield return new WaitForSeconds(1.0f);
+        Debug.Log("1");
+        yield return new WaitForSeconds(1.0f);
+        Debug.Log("start");
+        startGame = true;
+        SetttingGames();
+    }
+
+    #endregion
 }
