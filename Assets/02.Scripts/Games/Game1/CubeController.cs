@@ -1,10 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Photon.Pun;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using Photon.Pun;
 
-public class CubeController : MonoBehaviour, IPunObservable
+public class CubeController : MonoBehaviour
 {
     #region Public Fields
     [Tooltip("스피어 회전 속도 조정을 위한 필드 값")]
@@ -17,12 +14,14 @@ public class CubeController : MonoBehaviour, IPunObservable
     GameObject quizCube;
     Game1Manager game1Manager;
     private MeshRenderer meshRenderer;
+    PhotonView photonView;
     #endregion
 
     #region MonoBehaviour Callbacks
     [System.Obsolete]
     void Start()
     {
+
         if (quizCube == null)
         {
             quizCube = this.gameObject;
@@ -38,87 +37,75 @@ public class CubeController : MonoBehaviour, IPunObservable
         {
             if (rotateSpeed > 0)
             {
-                if (rotateSpeed >= 20f)
-                {
-                    rotateSpeed -= 0.05f;
-                }
-                else if (rotateSpeed >= 15f)
-                {
-                    rotateSpeed -= 0.02f;
-                }
-                else if (rotateSpeed >= 10f)
-                {
-                    rotateSpeed -= 0.005f;
-                }
-                else if (rotateSpeed >= 7f)
-                {
-                    rotateSpeed -= 0.003f;
-                }
-                else if (rotateSpeed >= 3f)
-                {
-                    rotateSpeed -= 0.002f;
-                }
-                else
-                {
-                    rotateSpeed -= 0.001f;
-                }
-                //Debug.Log(+"인스턴스아이디");
-                Random.InitState(10 + 1 + (int)Time.time);
+                //if (rotateSpeed >= 20f)
+                //{
+                //    rotateSpeed -= 0.05f;
+                //}
+                //else if (rotateSpeed >= 15f)
+                //{
+                //    rotateSpeed -= 0.02f;
+                //}
+                //else if (rotateSpeed >= 10f)
+                //{
+                //    rotateSpeed -= 0.005f;
+                //}
+                //else if (rotateSpeed >= 7f)
+                //{
+                //    rotateSpeed -= 0.003f;
+                //}
+                //else if (rotateSpeed >= 3f)
+                //{
+                //    rotateSpeed -= 0.002f;
+                //}
+                //else
+                //{
+                //    rotateSpeed -= 0.001f;
+                //}
+
                 Random.InitState(this.gameObject.GetInstanceID() + 1 + (int)Time.time);
                 quizCube.transform.Rotate(Vector3.up * rotateSpeed * Random.value);
-                Random.InitState(10 + 1 + (int)Time.time);
                 Random.InitState(this.gameObject.GetInstanceID() + 2 + (int)Time.time);
                 quizCube.transform.Rotate(Vector3.left * rotateSpeed * Random.value);
-                Random.InitState(10 + 1 + (int)Time.time);
                 Random.InitState(this.gameObject.GetInstanceID() + 3 + (int)Time.time);
                 quizCube.transform.Rotate(Vector3.forward * rotateSpeed * Random.value);
             }
             else
             {
                 rotateSpeed = 0f;
+                ChangeSpeedRPC(rotateSpeed);
                 quizCube.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
             }
         }
     }
 
-    public void OnPointerClick(PointerEventData pointerEventData)
-    {
-        if (pointerEventData.button == PointerEventData.InputButton.Left) 
-        { 
-            Debug.Log("Mouse Click Button : Left"); 
-        } 
-        else if (pointerEventData.button == PointerEventData.InputButton.Middle) 
-        { 
-            Debug.Log("Mouse Click Button : Middle"); 
-        } 
-        else if (pointerEventData.button == PointerEventData.InputButton.Right) 
-        { 
-            Debug.Log("Mouse Click Button : Right"); 
-        }
-        Debug.Log("Mouse Position : " + pointerEventData.position); 
-        Debug.Log("Mouse Click Count : " + pointerEventData.clickCount);
-
-    }
-
     #endregion
 
-    #region IPunObservable implementation
 
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    public void MaterialRPC(int materialId, int number)
     {
-        if(stream.IsWriting)
+        photonView = PhotonView.Get(this);
+        photonView.RPC("ChangeCubeMaterial", RpcTarget.All, materialId, number);
+    }
+    [PunRPC]
+    public void ChangeCubeMaterial(int materialId, int number)
+    {
+        GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
+        if(number > 0)
         {
-            stream.SendNext(meshRenderer.materials[0]);
-        }
-        else
-        {
-            Debug.LogError("씨발" + (Material)stream.ReceiveNext());
-            Debug.LogErrorFormat("씨발썅봉" + (Material)stream.ReceiveNext());
-            this.meshRenderer.materials[0] = (Material)stream.ReceiveNext() as Material;
+            answer = true;
         }
     }
 
-    #endregion
+    public void ChangeSpeedRPC(float speed)
+    {
+        photonView = PhotonView.Get(this);
+        photonView.RPC("ChangeSpeed", RpcTarget.All, speed);
+    }
 
+    [PunRPC]
+    public void ChangeSpeed(float speed)
+    {
+        rotateSpeed = speed;
+    }
 }
 

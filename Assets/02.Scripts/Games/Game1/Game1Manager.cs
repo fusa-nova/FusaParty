@@ -135,11 +135,12 @@ public class Game1Manager : MonoBehaviourPunCallbacks
 
                         if (playerAnswerCube.GetComponent<CubeController>().answer && playerAnswerQuad.GetComponent<QuadController>().answer)
                         {
-                            Debug.Log("정답입니다");
+
+                            Debug.LogError("<Color=Red><a>Great</a></Color> 정답입니다..", this);
                         }
                         else
                         {
-                            Debug.Log("오답입니다");
+                            Debug.Log("오답입니다.");
                         }
                     }
                 }
@@ -184,8 +185,6 @@ public class Game1Manager : MonoBehaviourPunCallbacks
             {
                 SetCube(i + 1, ranArr[i] + 1);
             }
-            Debug.Log(answerCube + "정답 큐브");
-            Debug.Log(answerQuad + "정답 쿼드");
             for (int i = 0; i < maxQuad; ++i)
             {
                 SetQuad(i + 1, ranArr[maxCube + i] + 1);
@@ -198,11 +197,13 @@ public class Game1Manager : MonoBehaviourPunCallbacks
         cube = MakeCube();
         if (cube != null)
         {
-            //photonView.RPC("ChangeCubeMaterial", RpcTarget.All, materialId);
-            cube.GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
             if (number == answerCube)
             {
-                cube.GetComponent<CubeController>().answer = true;
+                cube.GetComponent<CubeController>().MaterialRPC(materialId, number);
+            }
+            else
+            {
+                cube.GetComponent<CubeController>().MaterialRPC(materialId, 0);
             }
         }
         cube = null;
@@ -220,15 +221,9 @@ public class Game1Manager : MonoBehaviourPunCallbacks
                     cube = PhotonNetwork.Instantiate("Game1/Cube", new Vector3(rotateCubeX[j], rotateCubeY[i], 2f), Quaternion.identity, 0);
                     return cube;
                 }
-
             }
         }
         return null;
-    }
-
-    public void ChangeCubeMaterial(int materialId)
-    {
-        quad.GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
     }
 
     public void SetQuad(int number, int materialId)
@@ -236,11 +231,13 @@ public class Game1Manager : MonoBehaviourPunCallbacks
         quad = MakeQuad();
         if (quad != null)
         {
-            quad.GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
-
             if (number == answerQuad)
             {
-                quad.GetComponent<QuadController>().answer = true;
+                quad.GetComponent<QuadController>().MaterialRPC(materialId, number);
+            }
+            else
+            {
+                quad.GetComponent<QuadController>().MaterialRPC(materialId, 0);
             }
         }
         quad = null;
