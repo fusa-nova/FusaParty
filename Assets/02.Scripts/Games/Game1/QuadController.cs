@@ -1,7 +1,7 @@
 ﻿using Photon.Pun;
 using UnityEngine;
 
-public class QuadController : MonoBehaviour, IPunObservable
+public class QuadController : MonoBehaviour
 {
     #region Public Fields
     public bool answer;
@@ -36,20 +36,20 @@ public class QuadController : MonoBehaviour, IPunObservable
 
     #endregion
 
-    #region IPunObservable implementation
-
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    #region PhotonView RPC
+    public void MaterialRPC(int materialId, int number)
     {
-        //if (stream.IsWriting)
-        //{
-        //    // We own this player: send the others our data
-        //    stream.SendNext(this.GetComponent<MeshRenderer>().material);
-        //}
-        //else
-        //{
-        //    // Network player, receive data
-        //    this.GetComponent<MeshRenderer>().material = (Material)stream.ReceiveNext();
-        //}
+        PhotonView photonView = PhotonView.Get(this);
+        photonView.RPC("ChangeQuadMaterial", RpcTarget.All, materialId, number);
+    }
+    [PunRPC]
+    public void ChangeQuadMaterial(int materialId, int number)
+    {
+        GetComponent<MeshRenderer>().material = Resources.Load("Game1/" + materialId, typeof(Material)) as Material;
+        if(number > 0)
+        {
+            answer = true;
+        }
     }
 
     #endregion
