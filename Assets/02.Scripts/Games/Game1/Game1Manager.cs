@@ -28,11 +28,9 @@ public class Game1Manager : MonoBehaviourPunCallbacks
     [SerializeField]
     private int maxQuad = 3;
     public int quadStart = -3;
-    private int answerMaterialId;
     private int[] ranArr = Enumerable.Range(0, rangeLength).ToArray();
 
     private string objectName;
-    private int objectNumber;
 
     public int[] rotateCubeX = new int[4];
     public int[] rotateCubeY = new int[2];
@@ -82,7 +80,6 @@ public class Game1Manager : MonoBehaviourPunCallbacks
                 {
                     objectName = hit.collider.gameObject.name.Substring(0, 4);
                     //objectNumber = hit.collider.gameObject.GetComponent<CubeController>();
-                    objectNumber = 10;
                     switch (objectName)
                     {
                         case "Cube":
@@ -136,7 +133,8 @@ public class Game1Manager : MonoBehaviourPunCallbacks
                         if (playerAnswerCube.GetComponent<CubeController>().answer && playerAnswerQuad.GetComponent<QuadController>().answer)
                         {
 
-                            Debug.LogError("<Color=Red><a>Great</a></Color> 정답입니다..", this);
+                            Debug.Log("정답입니다"+ PhotonNetwork.NickName);
+                            WinerRPC(PhotonNetwork.NickName);
                         }
                         else
                         {
@@ -271,8 +269,9 @@ public class Game1Manager : MonoBehaviourPunCallbacks
             //Debug.LogError("PhotonNetwork : Trying to Load a level but we are not the master Client");
         }
         Debug.LogFormat("PlayerCount" + PhotonNetwork.CurrentRoom.PlayerCount);
+        Debug.LogFormat(PhotonNetwork.NickName + "이(가) 접속했습니다");
         //PhotonNetwork.LoadLevel("Room for " + PhotonNetwork.CurrentRoom.PlayerCount);
-        if(PhotonNetwork.CurrentRoom.PlayerCount >= 2)
+        if(PhotonNetwork.CurrentRoom.PlayerCount >= 1)
         {
             Debug.Log("Game Start");
             // 나중에 플레이어가 시작을 눌렀을 때로 변경해야한다.
@@ -297,6 +296,21 @@ public class Game1Manager : MonoBehaviourPunCallbacks
         Debug.Log("start");
         startGame = true;
         SetttingGames();
+    }
+
+    #endregion
+
+    #region PhotonView RPC
+    public void WinerRPC(string nickName)
+    {
+        //nickName = string.Format("{0}", PhotonNetwork.NickName);
+        this.photonView.RPC("WinnerSend", RpcTarget.All, nickName);
+    }
+    [PunRPC]
+    public void WinnerSend(string nickName)
+    {
+        Debug.LogError(nickName + "이 우승했네");
+        startGame = false;
     }
 
     #endregion

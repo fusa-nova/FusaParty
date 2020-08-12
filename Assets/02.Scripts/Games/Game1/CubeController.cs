@@ -26,7 +26,8 @@ public class CubeController : MonoBehaviour
         {
             quizCube = this.gameObject;
         }
-        rotateSpeed = 50f;
+        //rotateSpeed = 50f;
+        rotateSpeed = 0.2f;
         game1Manager = GameObject.Find("Game1Manager").GetComponent<Game1Manager>();
     }
 

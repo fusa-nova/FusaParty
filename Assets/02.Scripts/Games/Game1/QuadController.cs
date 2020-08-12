@@ -11,7 +11,7 @@ public class QuadController : MonoBehaviour
     [SerializeField]
     GameObject quizQuad;
     Game1Manager game1Manager;
-
+    PhotonView photonView;
     #endregion
 
     #region MonoBehaviour Callbacks
@@ -39,7 +39,7 @@ public class QuadController : MonoBehaviour
     #region PhotonView RPC
     public void MaterialRPC(int materialId, int number)
     {
-        PhotonView photonView = PhotonView.Get(this);
+        photonView = PhotonView.Get(this);
         photonView.RPC("ChangeQuadMaterial", RpcTarget.All, materialId, number);
     }
     [PunRPC]

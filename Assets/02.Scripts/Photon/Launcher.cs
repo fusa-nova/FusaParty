@@ -20,8 +20,11 @@ namespace Com.Fusa.FusaParty
         /// This client's version number. Users are separated from each other by gameVersion (which allows you to make breaking changes).
         /// </summary>
         string gameVersion = "1";
+        public string playerNicName;
         bool isConnecting;
 
+        [SerializeField]
+        private GameObject canvas;
         [Tooltip("The UI Panel to let the user enter name, connect and play")]
         [SerializeField]
         private GameObject controlPanel;
@@ -65,6 +68,7 @@ namespace Com.Fusa.FusaParty
         /// </summary>
         public void Connect()
         {
+            //photonView.Owner.NickName = "x";
             isConnecting = true;
             progressLabel.SetActive(true);
             controlPanel.SetActive(false);

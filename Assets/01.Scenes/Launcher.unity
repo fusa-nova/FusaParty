@@ -587,6 +587,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxPlayersPerRoom: 4
+  playerNicName: 
+  canvas: {fileID: 0}
   controlPanel: {fileID: 1132628238}
   progressLabel: {fileID: 341171142}
 --- !u!4 &1392650469
